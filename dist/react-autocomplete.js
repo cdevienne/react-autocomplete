@@ -89,11 +89,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    shouldItemRender: React.PropTypes.func,
 	    renderItem: React.PropTypes.func.isRequired,
 	    menuStyle: React.PropTypes.object,
+	    wrapperProps: React.PropTypes.object,
+	    wrapperStyle: React.PropTypes.object,
 	    inputProps: React.PropTypes.object
 	  },
 	
 	  getDefaultProps: function getDefaultProps() {
 	    return {
+	      wrapperProps: {},
+	      wrapperStyle: {
+	        display: 'inline-block'
+	      },
 	      inputProps: {},
 	      onChange: function onChange() {},
 	      onSelect: function onSelect(value, item) {},
@@ -344,17 +350,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return React.cloneElement(menu, { ref: 'menu' });
 	  },
 	
-	  getActiveItemValue: function getActiveItemValue() {
-	    if (this.state.highlightedIndex === null) return '';else {
-	      var item = this.props.items[this.state.highlightedIndex];
-	      // items can match when we maybeAutoCompleteText, but then get replaced by the app
-	      // for the next render? I think? TODO: file an issue (alab -> enter -> type 'a' for
-	      // alabamaa and then an error would happen w/o this guard, pretty sure there's a
-	      // better way)
-	      return item ? this.props.getItemValue(item) : '';
-	    }
-	  },
-	
 	  handleInputBlur: function handleInputBlur() {
 	    if (this._ignoreBlur) return;
 	    this.setState({
@@ -382,10 +377,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        state: this.state
 	      });
 	    }
-	    return React.createElement('div', { style: { display: 'inline-block' } }, React.createElement('input', _extends({}, this.props.inputProps, {
+	    return React.createElement('div', _extends({}, this.props.wrapperProps, { style: _extends({}, this.props.wrapperStyle) }), React.createElement('input', _extends({}, this.props.inputProps, {
 	      role: 'combobox',
 	      'aria-autocomplete': 'both',
-	      'aria-label': this.getActiveItemValue(),
 	      ref: 'input',
 	      onFocus: this.handleInputFocus,
 	      onBlur: this.handleInputBlur,
