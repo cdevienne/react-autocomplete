@@ -4,6 +4,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 var React = require('react');
 var scrollIntoView = require('dom-scroll-into-view');
+var throttle = require('lodash/throttle');
 
 var _debugStates = [];
 
@@ -64,6 +65,12 @@ var Autocomplete = React.createClass({
     this._performAutoCompleteOnKeyUp = false;
   },
 
+  componentDidMount: function componentDidMount() {
+    this.setMenuPositionsThrottled = throttle(this.setMenuPositions.bind(this), 16);
+    window.addEventListener('resize', this.setMenuPositionsThrottled);
+    window.addEventListener('scroll', this.setMenuPositionsThrottled);
+  },
+
   componentWillReceiveProps: function componentWillReceiveProps() {
     this._performAutoCompleteOnUpdate = true;
   },
@@ -77,6 +84,13 @@ var Autocomplete = React.createClass({
     }
 
     this.maybeScrollItemIntoView();
+  },
+
+  componentWillUnmount: function componentWillUnmount() {
+    window.removeEventListener('resize', this.setMenuPositionsThrottled);
+    window.removeEventListener('scroll', this.setMenuPositionsThrottled);
+    this.setMenuPositionsThrottled.clear();
+    this.setMenuPositionsThrottled = null;
   },
 
   maybeScrollItemIntoView: function maybeScrollItemIntoView() {
