@@ -38,19 +38,20 @@ var Autocomplete = React.createClass({
       shouldItemRender: function shouldItemRender() {
         return true;
       },
+      menuMinSize: 100,
       menuStyle: {
         borderRadius: '3px',
         boxShadow: '0 2px 12px rgba(0, 0, 0, 0.1)',
         background: 'rgba(255, 255, 255, 0.9)',
         padding: '2px 0',
         fontSize: '90%',
-        position: 'fixed',
-        overflow: 'auto',
-        maxHeight: '50%' }
+        position: 'absolute',
+        left: '0',
+        overflow: 'auto'
+      }
     };
   },
 
-  // TODO: don't cheat, let it flow to the bottom
   getInitialState: function getInitialState() {
     return {
       value: this.props.initialValue || '',
@@ -102,6 +103,7 @@ var Autocomplete = React.createClass({
   },
 
   handleKeyDown: function handleKeyDown(event) {
+    console.log(event);
     if (this.keyDownHandlers[event.key]) this.keyDownHandlers[event.key].call(this, event);else {
       this.setState({
         highlightedIndex: null,
@@ -129,7 +131,7 @@ var Autocomplete = React.createClass({
   },
 
   keyDownHandlers: {
-    ArrowDown: function ArrowDown() {
+    ArrowDown: function ArrowDown(event) {
       event.preventDefault();
       var highlightedIndex = this.state.highlightedIndex;
 
@@ -236,10 +238,20 @@ var Autocomplete = React.createClass({
     var marginBottom = parseInt(computedStyle.marginBottom, 10);
     var marginLeft = parseInt(computedStyle.marginLeft, 10);
     var marginRight = parseInt(computedStyle.marginRight, 10);
+    var marginTop = parseInt(computedStyle.marginTop, 10);
+
+    var inputTop = rect.top - marginTop;
+    var inputBottom = rect.bottom + marginBottom;
+
+    var heightBefore = inputTop;
+    var heightAfter = window.innerHeight - inputBottom;
+
+    var displayBefore = heightAfter < this.props.menuMinSize + 10 && heightBefore > heightAfter;
+
     this.setState({
-      menuTop: rect.bottom + marginBottom,
-      menuLeft: rect.left + marginLeft,
-      menuWidth: rect.width + marginLeft + marginRight
+      menuWidth: rect.width + marginLeft + marginRight,
+      menuMaxHeight: (displayBefore ? heightBefore : heightAfter) - 10,
+      menuPosition: displayBefore ? 'before' : 'after'
     });
   },
 
@@ -284,10 +296,14 @@ var Autocomplete = React.createClass({
       });
     });
     var style = {
-      left: this.state.menuLeft,
-      top: this.state.menuTop,
-      minWidth: this.state.menuWidth
+      minWidth: this.state.menuWidth,
+      maxHeight: this.state.menuMaxHeight
     };
+    if (this.state.menuPosition === 'before') {
+      style.bottom = '100%';
+    } else if (this.state.menuPosition === 'after') {
+      style.top = '100%';
+    }
     var menu = this.props.renderMenu(items, this.state.value, style);
     return React.cloneElement(menu, { ref: 'menu' });
   },
@@ -321,7 +337,7 @@ var Autocomplete = React.createClass({
     }
     return React.createElement(
       'div',
-      _extends({}, this.props.wrapperProps, { style: _extends({}, this.props.wrapperStyle) }),
+      _extends({}, this.props.wrapperProps, { style: _extends({ position: 'relative' }, this.props.wrapperStyle) }),
       React.createElement('input', _extends({}, this.props.inputProps, {
         role: 'combobox',
         'aria-autocomplete': 'both',
