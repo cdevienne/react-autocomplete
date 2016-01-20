@@ -161,7 +161,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  componentWillUnmount: function componentWillUnmount() {
 	    window.removeEventListener('resize', this.setMenuPositionsThrottled);
 	    window.removeEventListener('scroll', this.setMenuPositionsThrottled);
-	    this.setMenuPositionsThrottled.clear();
+	    this.setMenuPositionsThrottled.cancel();
 	    this.setMenuPositionsThrottled = null;
 	  },
 	

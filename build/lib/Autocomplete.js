@@ -89,7 +89,7 @@ var Autocomplete = React.createClass({
   componentWillUnmount: function componentWillUnmount() {
     window.removeEventListener('resize', this.setMenuPositionsThrottled);
     window.removeEventListener('scroll', this.setMenuPositionsThrottled);
-    this.setMenuPositionsThrottled.clear();
+    this.setMenuPositionsThrottled.cancel();
     this.setMenuPositionsThrottled = null;
   },
 
