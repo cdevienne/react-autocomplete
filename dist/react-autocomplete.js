@@ -84,7 +84,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  displayName: 'Autocomplete',
 	
 	  propTypes: {
-	    initialValue: React.PropTypes.any,
+	    value: React.PropTypes.any,
 	    onChange: React.PropTypes.func,
 	    onSelect: React.PropTypes.func,
 	    shouldItemRender: React.PropTypes.func,
@@ -101,6 +101,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      wrapperStyle: {
 	        display: 'inline-block'
 	      },
+	      value: '',
 	      inputProps: {},
 	      onChange: function onChange() {},
 	      onSelect: function onSelect(value, item) {},
@@ -126,7 +127,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	  getInitialState: function getInitialState() {
 	    return {
-	      value: this.props.initialValue || '',
 	      isOpen: false,
 	      highlightedIndex: null
 	    };
@@ -185,14 +185,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  handleChange: function handleChange(event) {
-	    var _this = this;
-	
 	    this._performAutoCompleteOnKeyUp = true;
-	    this.setState({
-	      value: event.target.value
-	    }, function () {
-	      _this.props.onChange(event, _this.state.value);
-	    });
+	    this.props.onChange(event, event.target.value);
 	  },
 	
 	  handleKeyUp: function handleKeyUp() {
@@ -228,7 +222,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    },
 	
 	    Enter: function Enter(event) {
-	      var _this2 = this;
+	      var _this = this;
 	
 	      if (this.state.isOpen === false) {
 	        // already selected this, do nothing
@@ -238,18 +232,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this.setState({
 	          isOpen: false
 	        }, function () {
-	          React.findDOMNode(_this2.refs.input).select();
+	          React.findDOMNode(_this.refs.input).select();
 	        });
 	      } else {
 	        var item = this.getFilteredItems()[this.state.highlightedIndex];
+	        var value = this.props.getItemValue(item);
 	        this.setState({
-	          value: this.props.getItemValue(item),
 	          isOpen: false,
 	          highlightedIndex: null
 	        }, function () {
 	          //React.findDOMNode(this.refs.input).focus() // TODO: file issue
-	          React.findDOMNode(_this2.refs.input).setSelectionRange(_this2.state.value.length, _this2.state.value.length);
-	          _this2.props.onSelect(_this2.state.value, item);
+	          React.findDOMNode(_this.refs.input).setSelectionRange(value.length, value.length);
+	          _this.props.onSelect(value, item);
 	        });
 	      }
 	    },
@@ -263,19 +257,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  getFilteredItems: function getFilteredItems() {
-	    var _this3 = this;
+	    var _this2 = this;
 	
 	    var items = this.props.items;
 	
 	    if (this.props.shouldItemRender) {
 	      items = items.filter(function (item) {
-	        return _this3.props.shouldItemRender(item, _this3.state.value);
+	        return _this2.props.shouldItemRender(item, _this2.props.value);
 	      });
 	    }
 	
 	    if (this.props.sortItems) {
 	      items.sort(function (a, b) {
-	        return _this3.props.sortItems(a, b, _this3.state.value);
+	        return _this2.props.sortItems(a, b, _this2.props.value);
 	      });
 	    }
 	
@@ -283,21 +277,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  maybeAutoCompleteText: function maybeAutoCompleteText() {
-	    var _this4 = this;
+	    var _this3 = this;
 	
-	    if (this.state.value === '') return;
+	    if (this.props.value === '') return;
 	    var highlightedIndex = this.state.highlightedIndex;
 	
 	    var items = this.getFilteredItems();
 	    if (items.length === 0) return;
 	    var matchedItem = highlightedIndex !== null ? items[highlightedIndex] : items[0];
 	    var itemValue = this.props.getItemValue(matchedItem);
-	    var itemValueDoesMatch = itemValue.toLowerCase().indexOf(this.state.value.toLowerCase()) === 0;
+	    var itemValueDoesMatch = itemValue.toLowerCase().indexOf(this.props.value.toLowerCase()) === 0;
 	    if (itemValueDoesMatch) {
 	      var node = React.findDOMNode(this.refs.input);
 	      var setSelection = function setSelection() {
 	        node.value = itemValue;
-	        node.setSelectionRange(_this4.state.value.length, itemValue.length);
+	        node.setSelectionRange(_this3.props.value.length, itemValue.length);
 	      };
 	      if (highlightedIndex === null) this.setState({ highlightedIndex: 0 }, setSelection);else setSelection();
 	    }
@@ -332,16 +326,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  selectItemFromMouse: function selectItemFromMouse(item) {
-	    var _this5 = this;
+	    var _this4 = this;
 	
+	    var value = this.props.getItemValue(item);
 	    this.setState({
-	      value: this.props.getItemValue(item),
 	      isOpen: false,
 	      highlightedIndex: null
 	    }, function () {
-	      _this5.props.onSelect(_this5.state.value, item);
-	      React.findDOMNode(_this5.refs.input).focus();
-	      _this5.setIgnoreBlur(false);
+	      _this4.props.onSelect(value, item);
+	      React.findDOMNode(_this4.refs.input).focus();
+	      _this4.setIgnoreBlur(false);
 	    });
 	  },
 	
@@ -350,19 +344,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  renderMenu: function renderMenu() {
-	    var _this6 = this;
+	    var _this5 = this;
 	
 	    var items = this.getFilteredItems().map(function (item, index) {
-	      var element = _this6.props.renderItem(item, _this6.state.highlightedIndex === index, { cursor: 'default' });
+	      var element = _this5.props.renderItem(item, _this5.state.highlightedIndex === index, { cursor: 'default' });
 	      return React.cloneElement(element, {
 	        onMouseDown: function onMouseDown() {
-	          return _this6.setIgnoreBlur(true);
+	          return _this5.setIgnoreBlur(true);
 	        },
 	        onMouseEnter: function onMouseEnter() {
-	          return _this6.highlightItemFromMouse(index);
+	          return _this5.highlightItemFromMouse(index);
 	        },
 	        onClick: function onClick() {
-	          return _this6.selectItemFromMouse(item);
+	          return _this5.selectItemFromMouse(item);
 	        },
 	        ref: 'item-' + index
 	      });
@@ -376,7 +370,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    } else if (this.state.menuPosition === 'after') {
 	      style.top = '100%';
 	    }
-	    var menu = this.props.renderMenu(items, this.state.value, style);
+	    var menu = this.props.renderMenu(items, this.props.value, style);
 	    return React.cloneElement(menu, { ref: 'menu' });
 	  },
 	
@@ -398,7 +392,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 	
 	  render: function render() {
-	    var _this7 = this;
+	    var _this6 = this;
 	
 	    if (this.props.debug) {
 	      // you don't like it, you love it
@@ -414,16 +408,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      onFocus: this.handleInputFocus,
 	      onBlur: this.handleInputBlur,
 	      onChange: function onChange(event) {
-	        return _this7.handleChange(event);
+	        return _this6.handleChange(event);
 	      },
 	      onKeyDown: function onKeyDown(event) {
-	        return _this7.handleKeyDown(event);
+	        return _this6.handleKeyDown(event);
 	      },
 	      onKeyUp: function onKeyUp(event) {
-	        return _this7.handleKeyUp(event);
+	        return _this6.handleKeyUp(event);
 	      },
 	      onClick: this.handleInputClick,
-	      value: this.state.value
+	      value: this.props.value
 	    })), this.state.isOpen && this.renderMenu(), this.props.debug && React.createElement('pre', { style: { marginLeft: 300 } }, JSON.stringify(_debugStates.slice(_debugStates.length - 5, _debugStates.length), null, 2)));
 	  }
 	});
