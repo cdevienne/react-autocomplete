@@ -6,6 +6,7 @@ let App = React.createClass({
 
   getInitialState () {
     return {
+      value: '',
       unitedStates: getStates(),
       loading: false
     }
@@ -21,11 +22,12 @@ let App = React.createClass({
           letter of the alphabet.
         </p>
         <Autocomplete
+          value={this.state.value}
           items={this.state.unitedStates}
           getItemValue={(item) => item.name}
-          onSelect={() => this.setState({ unitedStates: [] }) }
+          onSelect={value => this.setState({ value, unitedStates: [] }) }
           onChange={(event, value) => {
-            this.setState({loading: true})
+            this.setState({ value, loading: true })
             fakeRequest(value, (items) => {
               this.setState({ unitedStates: items, loading: false })
             })

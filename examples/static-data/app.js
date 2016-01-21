@@ -3,6 +3,9 @@ import { getStates, matchStateToTerm, sortStates, styles } from '../utils'
 import Autocomplete from '../../lib/index'
 
 let App = React.createClass({
+  getInitialState() {
+    return { value: 'Ma' }
+  },
   render () {
     return (
       <div>
@@ -14,11 +17,13 @@ let App = React.createClass({
         </p>
 
         <Autocomplete
-          initialValue="Ma"
+          value={this.state.value}
           items={getStates()}
           getItemValue={(item) => item.name}
           shouldItemRender={matchStateToTerm}
           sortItems={sortStates}
+          onChange={(event, value) => this.setState({ value })}
+          onSelect={value => this.setState({ value })}
           renderItem={(item, isHighlighted) => (
             <div
               style={isHighlighted ? styles.highlightedItem : styles.item}
